@@ -27,7 +27,7 @@ export const useLanguage = () => {
 const translations = {
   en: {
     // Header
-    'header.title': 'ExpenseTracker',
+    'header.title': 'R.A.T Budget',
     'header.subtitle': 'Manage your finances with ease',
     
     // Navigation
@@ -259,7 +259,7 @@ const translations = {
   },
   ro: {
     // Header
-    'header.title': 'Urmăritor Cheltuieli',
+    'header.title': 'R.A.T Budget',
     'header.subtitle': 'Gestionează-ți finanțele cu ușurință',
     
     // Navigation
