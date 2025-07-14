@@ -5,7 +5,7 @@ import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { useSupabaseAuth } from './hooks/useSupabaseAuth';
 import { useSupabaseData } from './hooks/useSupabaseData';
 import { Expense, Income, Budget, Tithe, TitheGoal, Category } from './types';
-import Header from './components/Header';
+import { Header } from './components/Header';
 import ExpenseForm from './components/ExpenseForm';
 import ExpenseList from './components/ExpenseList';
 import IncomeForm from './components/IncomeForm';
