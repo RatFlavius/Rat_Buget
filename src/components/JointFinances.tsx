@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Plus, Home, User, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { Plus, Home, User, TrendingUp, TrendingDown, DollarSign, Edit3, Trash2 } from 'lucide-react';
 import { Expense, Income, Category } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useAuth } from '../contexts/AuthContext';
+import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
 import { formatCurrency, formatDate } from '../utils/calculations';
 import * as LucideIcons from 'lucide-react';
 
@@ -32,7 +32,7 @@ const JointFinances: React.FC<JointFinancesProps> = ({
   onDeleteIncome
 }) => {
   const { t, currency, exchangeRates } = useLanguage();
-  const { user, users } = useAuth();
+  const { user } = useSupabaseAuth();
   const [activeView, setActiveView] = useState<'household' | 'personal'>('household');
 
   // Filter expenses and incomes by type
@@ -64,8 +64,11 @@ const JointFinances: React.FC<JointFinancesProps> = ({
   };
 
   const getUserName = (userId: string) => {
-    const foundUser = users.find(u => u.id === userId);
-    return foundUser?.name || 'Unknown User';
+    // For now, just return the current user's name or email
+    if (userId === user?.id) {
+      return user?.user_metadata?.name || user?.email?.split('@')[0] || 'User';
+    }
+    return 'Unknown User';
   };
 
   const renderTransactionList = (

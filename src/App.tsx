@@ -13,11 +13,11 @@ import IncomeList from './components/IncomeList';
 import Statistics from './components/Statistics';
 import BudgetManager from './components/BudgetManager';
 import TitheManager from './components/TitheManager';
-import JointFinances from './components/JointFinances';
 import CategoryManager from './components/CategoryManager';
 import { formatCurrency, calculateTotalIncome } from './utils/calculations';
 import { getDefaultCategories, getIncomeCategories } from './data/categories';
 import SupabaseAuth from './components/SupabaseAuth';
+import JointFinances from './components/JointFinances';
 
 function MainApplicationContent() {
   const { t, currency, exchangeRates } = useLanguage();
@@ -141,7 +141,7 @@ function MainApplicationContent() {
     { id: 'budgets', label: t('nav.budgets'), icon: Target },
     { id: 'tithes', label: t('nav.tithes'), icon: Heart },
     { id: 'categories', label: t('nav.categories'), icon: List },
-    { id: 'joint', label: t('nav.joint'), icon: TrendingUp }
+    { id: 'joint', label: t('nav.joint'), icon: Home }
   ];
 
   return (
