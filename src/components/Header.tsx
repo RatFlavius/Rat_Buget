@@ -7,6 +7,7 @@ import { Sun, Moon, Globe, DollarSign } from 'lucide-react';
 export function Header() {
   const { language, setLanguage, currency, setCurrency, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const { user, signOut } = useSupabaseAuth();
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
@@ -66,8 +67,32 @@ export function Header() {
               )}
             </button>
 
-            {/* User Menu */}
-            <UserMenu />
+            {/* User Info and Sign Out */}
+            {user && (
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
+                  <img
+                    src={user.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.user_metadata?.name || user.email || 'User')}`}
+                    alt={user.user_metadata?.name || 'User'}
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <div className="hidden sm:block text-left">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {user.user_metadata?.name || user.email?.split('@')[0] || 'User'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={signOut}
+                  className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  Sign Out
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
