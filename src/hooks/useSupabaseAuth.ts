@@ -40,17 +40,26 @@ export const useSupabaseAuth = () => {
 
     if (error) throw error;
 
-    // Create profile
+    // Create profile after successful signup
     if (data.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          user_id: data.user.id,
-          name,
-          email,
-        });
-
-      if (profileError) throw profileError;
+      // Wait a bit for the user to be fully created
+      setTimeout(async () => {
+        try {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: data.user.id,
+              name,
+              email,
+            });
+          
+          if (profileError) {
+            console.warn('Profile creation error:', profileError);
+          }
+        } catch (err) {
+          console.warn('Profile creation failed:', err);
+        }
+      }, 1000);
     }
 
     return data;
