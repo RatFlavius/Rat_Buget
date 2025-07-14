@@ -18,6 +18,7 @@ import { formatCurrency, calculateTotalIncome } from './utils/calculations';
 import { getDefaultCategories, getIncomeCategories } from './data/categories';
 import SupabaseAuth from './components/SupabaseAuth';
 import JointFinances from './components/JointFinances';
+import { Home } from 'lucide-react';
 
 function MainApplicationContent() {
   const { t, currency, exchangeRates } = useLanguage();

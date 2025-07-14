@@ -63,12 +63,8 @@ const JointFinances: React.FC<JointFinancesProps> = ({
     return category?.color || '#6b7280';
   };
 
-  const getUserName = (userId: string) => {
-    // For now, just return the current user's name or email
-    if (userId === user?.id) {
-      return user?.user_metadata?.name || user?.email?.split('@')[0] || 'User';
-    }
-    return 'Unknown User';
+  const getUserName = () => {
+    return user?.user_metadata?.name || user?.email?.split('@')[0] || 'User';
   };
 
   const renderTransactionList = (
@@ -124,7 +120,7 @@ const JointFinances: React.FC<JointFinancesProps> = ({
                       {transaction.category} • {formatDate(transaction.date)}
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500">
-                      {getUserName(transaction.userId)}
+                      {getUserName()}
                     </p>
                     {transaction.description && (
                       <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
@@ -155,13 +151,13 @@ const JointFinances: React.FC<JointFinancesProps> = ({
                           : 'hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
                       }`}
                     >
-                      <LucideIcons.Edit3 className="w-4 h-4" />
+                      <Edit3 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => isExpense ? onDeleteExpense(transaction.id) : onDeleteIncome(transaction.id)}
                       className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                     >
-                      <LucideIcons.Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -307,7 +303,7 @@ const JointFinances: React.FC<JointFinancesProps> = ({
             }`}
           >
             <Home className="w-4 h-4 inline mr-2" />
-            {t('joint.householdExpenses')}
+            Gospodărie
           </button>
           <button
             onClick={() => setActiveView('personal')}
@@ -318,7 +314,7 @@ const JointFinances: React.FC<JointFinancesProps> = ({
             }`}
           >
             <User className="w-4 h-4 inline mr-2" />
-            {t('joint.personalExpenses')}
+            Personal
           </button>
         </div>
       </div>
@@ -327,7 +323,7 @@ const JointFinances: React.FC<JointFinancesProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {activeView === 'household' ? t('joint.householdExpenses') : t('joint.personalExpenses')}
+            {activeView === 'household' ? 'Cheltuieli Gospodărie' : 'Cheltuieli Personale'}
           </h3>
           {renderTransactionList(
             activeView === 'household' ? householdExpenses : personalExpenses,
@@ -338,7 +334,7 @@ const JointFinances: React.FC<JointFinancesProps> = ({
 
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {activeView === 'household' ? t('joint.householdIncome') : t('joint.personalIncome')}
+            {activeView === 'household' ? 'Venituri Gospodărie' : 'Venituri Personale'}
           </h3>
           {renderTransactionList(
             activeView === 'household' ? householdIncomes : personalIncomes,
