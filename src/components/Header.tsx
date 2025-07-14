@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { UserMenu } from './UserMenu';
+import UserMenu from './UserMenu';
 import { Sun, Moon, Globe, DollarSign } from 'lucide-react';
 
 export function Header() {
