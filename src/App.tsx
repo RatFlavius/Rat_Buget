@@ -20,6 +20,34 @@ import SupabaseAuth from './components/SupabaseAuth';
 import JointFinances from './components/JointFinances';
 import { Home, AlertCircle } from 'lucide-react';
 
+// Loading component
+const LoadingScreen = () => (
+  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+    <div className="text-center">
+      <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">R.A.T Budget</h2>
+      <p className="text-gray-600 dark:text-gray-400">Se încarcă aplicația...</p>
+    </div>
+  </div>
+);
+
+// Error component
+const ErrorScreen = ({ error, onRetry }: { error: string; onRetry: () => void }) => (
+  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+    <div className="text-center max-w-md mx-auto p-6">
+      <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Eroare</h2>
+      <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+      <button
+        onClick={onRetry}
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        Încearcă din nou
+      </button>
+    </div>
+  </div>
+);
+
 function MainApplicationContent() {
   const { t, currency, exchangeRates } = useLanguage();
   const { user } = useSupabaseAuth();
@@ -384,16 +412,40 @@ function MainApplicationContent() {
 
 function AuthGate() {
   const { user, loading } = useSupabaseAuth();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleRetry = () => {
+    setError(null);
+    window.location.reload();
+  };
+
+  // Error boundary
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('Application error:', event.error);
+      setError('A apărut o eroare neașteptată. Te rog reîncarcă pagina.');
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      setError('A apărut o eroare de conexiune. Verifică conexiunea la internet.');
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
+  if (error) {
+    return <ErrorScreen error={error} onRetry={handleRetry} />;
+  }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!user) {
