@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Home, User, TrendingUp, TrendingDown, DollarSign, Edit3, Trash2 } from 'lucide-react';
 import { Expense, Income, Category } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
+import { useAuth } from '../contexts/AuthContext';
 import { formatCurrency, formatDate } from '../utils/calculations';
 import * as LucideIcons from 'lucide-react';
 
@@ -32,7 +32,7 @@ const JointFinances: React.FC<JointFinancesProps> = ({
   onDeleteIncome
 }) => {
   const { t, currency, exchangeRates } = useLanguage();
-  const { user } = useSupabaseAuth();
+  const { user } = useAuth();
   const [activeView, setActiveView] = useState<'household' | 'personal'>('household');
 
   // Filter expenses and incomes by type

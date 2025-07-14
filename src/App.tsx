@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, BarChart3, Target, List, Heart, TrendingUp } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
-import { useSupabaseAuth } from './hooks/useSupabaseAuth';
-import { useSupabaseData } from './hooks/useSupabaseData';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Expense, Income, Budget, Tithe, TitheGoal, Category } from './types';
 import { Header } from './components/Header';
 import ExpenseForm from './components/ExpenseForm';
@@ -16,7 +15,7 @@ import TitheManager from './components/TitheManager';
 import CategoryManager from './components/CategoryManager';
 import { formatCurrency, calculateTotalIncome } from './utils/calculations';
 import { getDefaultCategories, getIncomeCategories } from './data/categories';
-import SupabaseAuth from './components/SupabaseAuth';
+import LoginForm from './components/LoginForm';
 import JointFinances from './components/JointFinances';
 import { Home, AlertCircle } from 'lucide-react';
 
@@ -50,37 +49,17 @@ const ErrorScreen = ({ error, onRetry }: { error: string; onRetry: () => void })
 
 function MainApplicationContent() {
   const { t, currency, exchangeRates } = useLanguage();
-  const { user } = useSupabaseAuth();
+  const { user } = useAuth();
   
-  const {
-    expenses,
-    incomes,
-    budgets,
-    tithes,
-    titheGoals,
-    expenseCategories,
-    incomeCategories,
-    loading,
-    addExpense,
-    updateExpense,
-    deleteExpense,
-    addIncome,
-    updateIncome,
-    deleteIncome,
-    addBudget,
-    deleteBudget,
-    addTithe,
-    updateTithe,
-    deleteTithe,
-    addTitheGoal,
-    deleteTitheGoal,
-    addExpenseCategory,
-    addIncomeCategory,
-    updateExpenseCategory,
-    updateIncomeCategory,
-    deleteExpenseCategory,
-    deleteIncomeCategory,
-  } = useSupabaseData(user?.id);
+  // Use localStorage for data storage instead of Supabase
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [tithes, setTithes] = useState<Tithe[]>([]);
+  const [titheGoals, setTitheGoals] = useState<TitheGoal[]>([]);
+  const [expenseCategories, setExpenseCategories] = useState<Category[]>([]);
+  const [incomeCategories, setIncomeCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const [activeTab, setActiveTab] = useState<'expenses' | 'income' | 'statistics' | 'budgets' | 'tithes' | 'categories' | 'joint'>('joint');
   const [showExpenseForm, setShowExpenseForm] = useState(false);
@@ -88,16 +67,170 @@ function MainApplicationContent() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [editingIncome, setEditingIncome] = useState<Income | null>(null);
 
+  // Load data from localStorage
+  useEffect(() => {
+    if (user) {
+      const userKey = `user_${user.id}`;
+      const savedExpenses = localStorage.getItem(`${userKey}_expenses`);
+      const savedIncomes = localStorage.getItem(`${userKey}_incomes`);
+      const savedBudgets = localStorage.getItem(`${userKey}_budgets`);
+      const savedTithes = localStorage.getItem(`${userKey}_tithes`);
+      const savedTitheGoals = localStorage.getItem(`${userKey}_titheGoals`);
+      const savedExpenseCategories = localStorage.getItem(`${userKey}_expenseCategories`);
+      const savedIncomeCategories = localStorage.getItem(`${userKey}_incomeCategories`);
+      
+      if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
+      if (savedIncomes) setIncomes(JSON.parse(savedIncomes));
+      if (savedBudgets) setBudgets(JSON.parse(savedBudgets));
+      if (savedTithes) setTithes(JSON.parse(savedTithes));
+      if (savedTitheGoals) setTitheGoals(JSON.parse(savedTitheGoals));
+      if (savedExpenseCategories) setExpenseCategories(JSON.parse(savedExpenseCategories));
+      if (savedIncomeCategories) setIncomeCategories(JSON.parse(savedIncomeCategories));
+      
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Save data to localStorage
+  const saveToStorage = (key: string, data: any) => {
+    if (user) {
+      const userKey = `user_${user.id}`;
+      localStorage.setItem(`${userKey}_${key}`, JSON.stringify(data));
+    }
+  };
+
+  // CRUD operations
+  const addExpense = (expenseData: Omit<Expense, 'id'>) => {
+    const newExpense = { ...expenseData, id: Date.now().toString() };
+    const updatedExpenses = [...expenses, newExpense];
+    setExpenses(updatedExpenses);
+    saveToStorage('expenses', updatedExpenses);
+  };
+
+  const updateExpense = (expense: Expense) => {
+    const updatedExpenses = expenses.map(e => e.id === expense.id ? expense : e);
+    setExpenses(updatedExpenses);
+    saveToStorage('expenses', updatedExpenses);
+  };
+
+  const deleteExpense = (id: string) => {
+    const updatedExpenses = expenses.filter(e => e.id !== id);
+    setExpenses(updatedExpenses);
+    saveToStorage('expenses', updatedExpenses);
+  };
+
+  const addIncome = (incomeData: Omit<Income, 'id'>) => {
+    const newIncome = { ...incomeData, id: Date.now().toString() };
+    const updatedIncomes = [...incomes, newIncome];
+    setIncomes(updatedIncomes);
+    saveToStorage('incomes', updatedIncomes);
+  };
+
+  const updateIncome = (income: Income) => {
+    const updatedIncomes = incomes.map(i => i.id === income.id ? income : i);
+    setIncomes(updatedIncomes);
+    saveToStorage('incomes', updatedIncomes);
+  };
+
+  const deleteIncome = (id: string) => {
+    const updatedIncomes = incomes.filter(i => i.id !== id);
+    setIncomes(updatedIncomes);
+    saveToStorage('incomes', updatedIncomes);
+  };
+
+  const addBudget = (budgetData: Omit<Budget, 'id'>) => {
+    const newBudget = { ...budgetData, id: Date.now().toString() };
+    const updatedBudgets = [...budgets, newBudget];
+    setBudgets(updatedBudgets);
+    saveToStorage('budgets', updatedBudgets);
+  };
+
+  const deleteBudget = (id: string) => {
+    const updatedBudgets = budgets.filter(b => b.id !== id);
+    setBudgets(updatedBudgets);
+    saveToStorage('budgets', updatedBudgets);
+  };
+
+  const addTithe = (titheData: Omit<Tithe, 'id'>) => {
+    const newTithe = { ...titheData, id: Date.now().toString() };
+    const updatedTithes = [...tithes, newTithe];
+    setTithes(updatedTithes);
+    saveToStorage('tithes', updatedTithes);
+  };
+
+  const updateTithe = (tithe: Tithe) => {
+    const updatedTithes = tithes.map(t => t.id === tithe.id ? tithe : t);
+    setTithes(updatedTithes);
+    saveToStorage('tithes', updatedTithes);
+  };
+
+  const deleteTithe = (id: string) => {
+    const updatedTithes = tithes.filter(t => t.id !== id);
+    setTithes(updatedTithes);
+    saveToStorage('tithes', updatedTithes);
+  };
+
+  const addTitheGoal = (goalData: Omit<TitheGoal, 'id'>) => {
+    const newGoal = { ...goalData, id: Date.now().toString() };
+    const updatedGoals = [...titheGoals, newGoal];
+    setTitheGoals(updatedGoals);
+    saveToStorage('titheGoals', updatedGoals);
+  };
+
+  const deleteTitheGoal = (id: string) => {
+    const updatedGoals = titheGoals.filter(g => g.id !== id);
+    setTitheGoals(updatedGoals);
+    saveToStorage('titheGoals', updatedGoals);
+  };
+
+  const addExpenseCategory = (categoryData: Omit<Category, 'id'>) => {
+    const newCategory = { ...categoryData, id: Date.now().toString() };
+    const updatedCategories = [...expenseCategories, newCategory];
+    setExpenseCategories(updatedCategories);
+    saveToStorage('expenseCategories', updatedCategories);
+  };
+
+  const addIncomeCategory = (categoryData: Omit<Category, 'id'>) => {
+    const newCategory = { ...categoryData, id: Date.now().toString() };
+    const updatedCategories = [...incomeCategories, newCategory];
+    setIncomeCategories(updatedCategories);
+    saveToStorage('incomeCategories', updatedCategories);
+  };
+
+  const updateExpenseCategory = (category: Category) => {
+    const updatedCategories = expenseCategories.map(c => c.id === category.id ? category : c);
+    setExpenseCategories(updatedCategories);
+    saveToStorage('expenseCategories', updatedCategories);
+  };
+
+  const updateIncomeCategory = (category: Category) => {
+    const updatedCategories = incomeCategories.map(c => c.id === category.id ? category : c);
+    setIncomeCategories(updatedCategories);
+    saveToStorage('incomeCategories', updatedCategories);
+  };
+
+  const deleteExpenseCategory = (id: string) => {
+    const updatedCategories = expenseCategories.filter(c => c.id !== id);
+    setExpenseCategories(updatedCategories);
+    saveToStorage('expenseCategories', updatedCategories);
+  };
+
+  const deleteIncomeCategory = (id: string) => {
+    const updatedCategories = incomeCategories.filter(c => c.id !== id);
+    setIncomeCategories(updatedCategories);
+    saveToStorage('incomeCategories', updatedCategories);
+  };
+
   // Initialize default categories if none exist
   useEffect(() => {
-    if (user && !loading && expenseCategories.length === 0) {
+    if (user && !loading && expenseCategories.length === 0 && !localStorage.getItem(`user_${user.id}_expenseCategories`)) {
       const defaultExpenseCategories = getDefaultCategories(t);
       defaultExpenseCategories.forEach(category => {
         addExpenseCategory(category);
       });
     }
 
-    if (user && !loading && incomeCategories.length === 0) {
+    if (user && !loading && incomeCategories.length === 0 && !localStorage.getItem(`user_${user.id}_incomeCategories`)) {
       const defaultIncomeCategories = getIncomeCategories(t);
       defaultIncomeCategories.forEach(category => {
         addIncomeCategory(category);
@@ -441,8 +574,17 @@ function MainApplicationContent() {
 }
 
 function AuthGate() {
-  const { user, loading } = useSupabaseAuth();
+  const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading time
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleRetry = () => {
     setError(null);
@@ -479,7 +621,7 @@ function AuthGate() {
   }
 
   if (!user) {
-    return <SupabaseAuth />;
+    return <LoginForm />;
   }
 
   return <MainApplicationContent />;
@@ -489,7 +631,9 @@ function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <AuthGate />
+        <AuthProvider>
+          <AuthGate />
+        </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
   );
