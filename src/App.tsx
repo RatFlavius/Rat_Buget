@@ -225,7 +225,7 @@ function MainApplicationContent() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Cheltuieli Luna Curentă</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Cheltuieli</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(currentMonthExpensesTotal, currency, exchangeRates)}
                 </p>
@@ -239,7 +239,7 @@ function MainApplicationContent() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Venituri Luna Curentă</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Venituri</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(currentMonthIncomesTotal, currency, exchangeRates)}
                 </p>
@@ -253,7 +253,7 @@ function MainApplicationContent() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Cheltuieli Anuale</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Cheltuieli Anul {currentYear}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(yearlyExpensesTotal, currency, exchangeRates)}
                 </p>
@@ -267,7 +267,7 @@ function MainApplicationContent() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Venituri Anuale</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Venituri Anul {currentYear}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(yearlyIncomesTotal, currency, exchangeRates)}
                 </p>

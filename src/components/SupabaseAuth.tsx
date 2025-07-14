@@ -65,9 +65,6 @@ const SupabaseAuth: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               R.A.T Buget
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              {isLogin ? t('auth.welcomeBack') : t('auth.createAccount')}
-            </p>
           </div>
 
           {/* Form */}
