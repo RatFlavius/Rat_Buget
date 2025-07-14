@@ -82,7 +82,6 @@ function MainApplicationContent() {
     deleteIncomeCategory,
   } = useSupabaseData(user?.id);
   
-  const [activeTab, setActiveTab] = useState<'expenses' | 'income' | 'statistics' | 'budgets' | 'tithes' | 'categories' | 'joint'>('expenses');
   const [activeTab, setActiveTab] = useState<'expenses' | 'income' | 'statistics' | 'budgets' | 'tithes' | 'categories' | 'joint'>('joint');
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showIncomeForm, setShowIncomeForm] = useState(false);
@@ -226,9 +225,9 @@ function MainApplicationContent() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{t('summary.totalExpenses')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Cheltuieli Luna Curentă</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(totalExpenses, currency, exchangeRates)}
+                  {formatCurrency(currentMonthExpensesTotal, currency, exchangeRates)}
                 </p>
               </div>
               <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
@@ -240,9 +239,9 @@ function MainApplicationContent() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{t('stats.totalIncome')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Venituri Luna Curentă</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(totalIncome, currency, exchangeRates)}
+                  {formatCurrency(currentMonthIncomesTotal, currency, exchangeRates)}
                 </p>
               </div>
               <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
@@ -254,13 +253,13 @@ function MainApplicationContent() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{t('stats.netIncome')}</p>
-                <p className={`text-2xl font-bold ${netIncome >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {formatCurrency(netIncome, currency, exchangeRates)}
+                <p className="text-sm text-gray-600 dark:text-gray-400">Cheltuieli Anuale</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formatCurrency(yearlyExpensesTotal, currency, exchangeRates)}
                 </p>
               </div>
-              <div className={`p-3 rounded-lg ${netIncome >= 0 ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'}`}>
-                <Target className={`w-6 h-6 ${netIncome >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`} />
+              <div className="p-3 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                <Target className="w-6 h-6 text-red-600 dark:text-red-400" />
               </div>
             </div>
           </div>
@@ -268,13 +267,13 @@ function MainApplicationContent() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{t('summary.thisMonth')}</p>
-                <p className="text-lg font-medium text-gray-900 dark:text-white">
-                  {currentMonth}
+                <p className="text-sm text-gray-600 dark:text-gray-400">Venituri Anuale</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formatCurrency(yearlyIncomesTotal, currency, exchangeRates)}
                 </p>
               </div>
-              <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-                <List className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </div>
