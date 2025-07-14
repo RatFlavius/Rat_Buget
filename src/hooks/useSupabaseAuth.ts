@@ -28,41 +28,26 @@ export const useSupabaseAuth = () => {
   }, []);
 
   const signUp = async (email: string, password: string, name: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name,
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+          },
         },
-      },
-    });
+      });
 
-    if (error) throw error;
+      if (error) throw error;
 
-    // Create profile after successful signup
-    if (data.user) {
-      // Wait a bit for the user to be fully created
-      setTimeout(async () => {
-        try {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              user_id: data.user.id,
-              name,
-              email,
-            });
-          
-          if (profileError) {
-            console.warn('Profile creation error:', profileError);
-          }
-        } catch (err) {
-          console.warn('Profile creation failed:', err);
-        }
-      }, 1000);
+      // Don't try to create profile immediately - let the trigger handle it
+      // or create it after the user is confirmed
+      return data;
+    } catch (error) {
+      console.error('Sign up error:', error);
+      throw error;
     }
-
-    return data;
   };
 
   const signIn = async (email: string, password: string) => {

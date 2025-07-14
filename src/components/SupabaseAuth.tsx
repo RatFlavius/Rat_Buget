@@ -30,10 +30,20 @@ const SupabaseAuth: React.FC = () => {
           setLoading(false);
           return;
         }
-        await signUp(formData.email, formData.password, formData.name);
+        const result = await signUp(formData.email, formData.password, formData.name);
+        if (result.user && !result.user.email_confirmed_at) {
+          setError('Please check your email to confirm your account before signing in.');
+          setLoading(false);
+          return;
+        }
       }
     } catch (err: any) {
-      setError(err.message || t('auth.genericError'));
+      console.error('Auth error:', err);
+      if (err.message?.includes('row-level security')) {
+        setError('Database setup incomplete. Please contact support.');
+      } else {
+        setError(err.message || t('auth.genericError'));
+      }
     } finally {
       setLoading(false);
     }
