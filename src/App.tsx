@@ -83,6 +83,7 @@ function MainApplicationContent() {
   } = useSupabaseData(user?.id);
   
   const [activeTab, setActiveTab] = useState<'expenses' | 'income' | 'statistics' | 'budgets' | 'tithes' | 'categories' | 'joint'>('expenses');
+  const [activeTab, setActiveTab] = useState<'expenses' | 'income' | 'statistics' | 'budgets' | 'tithes' | 'categories' | 'joint'>('joint');
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showIncomeForm, setShowIncomeForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -149,8 +150,38 @@ function MainApplicationContent() {
 
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
   const totalIncome = calculateTotalIncome(incomes);
-  const netIncome = totalIncome - totalExpenses;
   const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  
+  // Calculate current month totals
+  const currentMonthNumber = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  
+  const currentMonthExpenses = expenses.filter(expense => {
+    const expenseDate = new Date(expense.date);
+    return expenseDate.getMonth() === currentMonthNumber && expenseDate.getFullYear() === currentYear;
+  });
+  
+  const currentMonthIncomes = incomes.filter(income => {
+    const incomeDate = new Date(income.date);
+    return incomeDate.getMonth() === currentMonthNumber && incomeDate.getFullYear() === currentYear;
+  });
+  
+  const currentMonthExpensesTotal = currentMonthExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const currentMonthIncomesTotal = currentMonthIncomes.reduce((sum, income) => sum + income.amount, 0);
+  
+  // Calculate yearly totals
+  const yearlyExpenses = expenses.filter(expense => {
+    const expenseDate = new Date(expense.date);
+    return expenseDate.getFullYear() === currentYear;
+  });
+  
+  const yearlyIncomes = incomes.filter(income => {
+    const incomeDate = new Date(income.date);
+    return incomeDate.getFullYear() === currentYear;
+  });
+  
+  const yearlyExpensesTotal = yearlyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const yearlyIncomesTotal = yearlyIncomes.reduce((sum, income) => sum + income.amount, 0);
 
   if (loading) {
     return (
@@ -176,13 +207,13 @@ function MainApplicationContent() {
   }
 
   const tabs = [
+    { id: 'joint', label: t('nav.joint'), icon: Home },
     { id: 'expenses', label: t('nav.expenses'), icon: List },
     { id: 'income', label: t('nav.income'), icon: TrendingUp },
     { id: 'statistics', label: t('nav.statistics'), icon: BarChart3 },
     { id: 'budgets', label: t('nav.budgets'), icon: Target },
     { id: 'tithes', label: t('nav.tithes'), icon: Heart },
-    { id: 'categories', label: t('nav.categories'), icon: List },
-    { id: 'joint', label: t('nav.joint'), icon: Home }
+    { id: 'categories', label: t('nav.categories'), icon: List }
   ];
 
   return (
