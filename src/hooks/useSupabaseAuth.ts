@@ -70,10 +70,18 @@ export const useSupabaseAuth = () => {
           data: {
             name,
           },
+          emailRedirectTo: window.location.origin,
         },
       });
 
       if (error) throw error;
+      
+      // Don't try to create profile immediately if email confirmation is required
+      if (data.user && !data.user.email_confirmed_at) {
+        // User needs to confirm email first
+        return data;
+      }
+      
       return data;
     } catch (error) {
       console.error('Sign up error:', error);

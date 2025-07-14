@@ -32,7 +32,7 @@ const SupabaseAuth: React.FC = () => {
         }
         const result = await signUp(formData.email, formData.password, formData.name);
         if (result.user && !result.user.email_confirmed_at) {
-          setError('Please check your email to confirm your account before signing in.');
+          setError('Cont creat cu succes! Verifică-ți email-ul pentru a confirma contul.');
           setLoading(false);
           return;
         }
