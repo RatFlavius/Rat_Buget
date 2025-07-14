@@ -18,14 +18,48 @@ export const useSupabaseAuth = () => {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Create profile when user signs up
+      if (session?.user && _event === 'SIGNED_IN') {
+        await createUserProfile(session.user);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const createUserProfile = async (user: User) => {
+    try {
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!existingProfile) {
+        // Create new profile
+        const { error } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: user.id,
+            name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+            email: user.email || '',
+            avatar: user.user_metadata?.avatar_url || null,
+          });
+
+        if (error) {
+          console.error('Error creating profile:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Error in createUserProfile:', error);
+    }
+  };
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
@@ -40,9 +74,6 @@ export const useSupabaseAuth = () => {
       });
 
       if (error) throw error;
-
-      // Don't try to create profile immediately - let the trigger handle it
-      // or create it after the user is confirmed
       return data;
     } catch (error) {
       console.error('Sign up error:', error);
