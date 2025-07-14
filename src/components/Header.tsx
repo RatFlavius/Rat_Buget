@@ -3,14 +3,13 @@ import { useState } from 'react';
 import { Moon, Sun, Wallet, Languages, Plus, DollarSign } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useAuth } from '../contexts/AuthContext';
-import UserMenu from './UserMenu';
+import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
 import { Currency } from '../contexts/LanguageContext';
 
 const Header: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const { language, setLanguage, currency, setCurrency, updateExchangeRates, t } = useLanguage();
-  const { user, register } = useAuth();
+  const { user, signOut } = useSupabaseAuth();
   const [isUpdatingRates, setIsUpdatingRates] = useState(false);
 
   const toggleLanguage = () => {
@@ -49,27 +48,6 @@ const Header: React.FC = () => {
           </div>
           
           <div className="flex items-center space-x-2">
-            {user && (
-              <button
-                onClick={async () => {
-                  const name = prompt(t('auth.enterSpouseName'));
-                  const email = prompt(t('auth.enterSpouseEmail'));
-                  if (name && email) {
-                    const password = prompt(t('auth.enterSpousePassword')) || 'password123';
-                    await register(name, email, password);
-                    alert(t('auth.spouseAccountCreated'));
-                  }
-                }}
-                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center space-x-1"
-                title={t('auth.addFamilyMember')}
-              >
-                <Plus className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                <span className="text-xs font-medium text-gray-600 dark:text-gray-300 hidden sm:inline">
-                  {t('auth.addUser')}
-                </span>
-              </button>
-            )}
-            
             <button
               onClick={toggleLanguage}
               className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center space-x-1"
@@ -118,7 +96,27 @@ const Header: React.FC = () => {
               )}
             </button>
             
-            <UserMenu />
+            {user && (
+              <div className="flex items-center space-x-3">
+                <div className="hidden sm:block text-right">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {user.user_metadata?.name || user.email}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {user.email}
+                  </p>
+                </div>
+                <button
+                  onClick={signOut}
+                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  title={t('auth.signOut')}
+                >
+                  <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

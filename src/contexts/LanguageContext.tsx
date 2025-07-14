@@ -248,6 +248,7 @@ const translations = {
     'common.edit': 'Edit',
     'common.delete': 'Delete',
     'common.close': 'Close',
+    'common.loading': 'Loading...',
     
     // Currency
     'currency.usd': 'USD',
@@ -480,6 +481,7 @@ const translations = {
     'common.edit': 'Editează',
     'common.delete': 'Șterge',
     'common.close': 'Închide',
+    'common.loading': 'Se încarcă...',
     
     // Currency
     'currency.usd': 'USD',

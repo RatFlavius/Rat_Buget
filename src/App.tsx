@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Plus, BarChart3, Target, List, Heart, TrendingUp } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { useSupabaseAuth } from './hooks/useSupabaseAuth';
+import { useSupabaseData } from './hooks/useSupabaseData';
 import { Expense, Income, Budget, Tithe, TitheGoal, Category } from './types';
 import Header from './components/Header';
 import ExpenseForm from './components/ExpenseForm';
@@ -16,213 +17,64 @@ import JointFinances from './components/JointFinances';
 import CategoryManager from './components/CategoryManager';
 import { formatCurrency, calculateTotalIncome } from './utils/calculations';
 import { getDefaultCategories, getIncomeCategories } from './data/categories';
-import LoginForm from './components/LoginForm';
+import SupabaseAuth from './components/SupabaseAuth';
 
 function MainApplicationContent() {
   const { t, currency, exchangeRates } = useLanguage();
-  const { user } = useAuth();
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [incomes, setIncomes] = useState<Income[]>([]);
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [tithes, setTithes] = useState<Tithe[]>([]);
-  const [titheGoals, setTitheGoals] = useState<TitheGoal[]>([]);
-  const [expenseCategories, setExpenseCategories] = useState<Category[]>([]);
-  const [incomeCategories, setIncomeCategories] = useState<Category[]>([]);
+  const { user } = useSupabaseAuth();
+  
+  const {
+    expenses,
+    incomes,
+    budgets,
+    tithes,
+    titheGoals,
+    expenseCategories,
+    incomeCategories,
+    loading,
+    addExpense,
+    updateExpense,
+    deleteExpense,
+    addIncome,
+    updateIncome,
+    deleteIncome,
+    addBudget,
+    deleteBudget,
+    addTithe,
+    updateTithe,
+    deleteTithe,
+    addTitheGoal,
+    deleteTitheGoal,
+    addExpenseCategory,
+    addIncomeCategory,
+    updateExpenseCategory,
+    updateIncomeCategory,
+    deleteExpenseCategory,
+    deleteIncomeCategory,
+  } = useSupabaseData(user?.id);
+  
   const [activeTab, setActiveTab] = useState<'expenses' | 'income' | 'statistics' | 'budgets' | 'tithes' | 'categories' | 'joint'>('expenses');
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showIncomeForm, setShowIncomeForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [editingIncome, setEditingIncome] = useState<Income | null>(null);
 
-  // Create user-specific localStorage keys
-  const getUserKey = (key: string) => `${key}_${user!.id}`;
-
-  // Load data from localStorage on component mount
+  // Initialize default categories if none exist
   useEffect(() => {
-    const savedExpenses = localStorage.getItem(getUserKey('expenses'));
-    const savedIncomes = localStorage.getItem(getUserKey('incomes'));
-    const savedBudgets = localStorage.getItem(getUserKey('budgets'));
-    const savedTithes = localStorage.getItem(getUserKey('tithes'));
-    const savedTitheGoals = localStorage.getItem(getUserKey('titheGoals'));
-    const savedExpenseCategories = localStorage.getItem(getUserKey('expenseCategories'));
-    const savedIncomeCategories = localStorage.getItem(getUserKey('incomeCategories'));
-    
-    if (savedExpenses) {
-      setExpenses(JSON.parse(savedExpenses));
-    }
-    if (savedIncomes) {
-      setIncomes(JSON.parse(savedIncomes));
-    }
-    if (savedBudgets) {
-      setBudgets(JSON.parse(savedBudgets));
-    }
-    if (savedTithes) {
-      setTithes(JSON.parse(savedTithes));
-    }
-    if (savedTitheGoals) {
-      setTitheGoals(JSON.parse(savedTitheGoals));
-    }
-    
-    // Initialize categories with defaults if none exist
-    if (savedExpenseCategories) {
-      setExpenseCategories(JSON.parse(savedExpenseCategories));
-    } else {
+    if (user && !loading && expenseCategories.length === 0) {
       const defaultExpenseCategories = getDefaultCategories(t);
-      setExpenseCategories(defaultExpenseCategories);
+      defaultExpenseCategories.forEach(category => {
+        addExpenseCategory(category);
+      });
     }
-    
-    if (savedIncomeCategories) {
-      setIncomeCategories(JSON.parse(savedIncomeCategories));
-    } else {
+
+    if (user && !loading && incomeCategories.length === 0) {
       const defaultIncomeCategories = getIncomeCategories(t);
-      setIncomeCategories(defaultIncomeCategories);
+      defaultIncomeCategories.forEach(category => {
+        addIncomeCategory(category);
+      });
     }
-  }, [user!.id, t]);
-
-  // Save data to localStorage whenever data changes
-  useEffect(() => {
-    localStorage.setItem(getUserKey('expenses'), JSON.stringify(expenses));
-  }, [expenses]);
-
-  useEffect(() => {
-    localStorage.setItem(getUserKey('incomes'), JSON.stringify(incomes));
-  }, [incomes]);
-
-  useEffect(() => {
-    localStorage.setItem(getUserKey('budgets'), JSON.stringify(budgets));
-  }, [budgets]);
-
-  useEffect(() => {
-    localStorage.setItem(getUserKey('tithes'), JSON.stringify(tithes));
-  }, [tithes]);
-
-  useEffect(() => {
-    localStorage.setItem(getUserKey('titheGoals'), JSON.stringify(titheGoals));
-  }, [titheGoals]);
-
-  useEffect(() => {
-    localStorage.setItem(getUserKey('expenseCategories'), JSON.stringify(expenseCategories));
-  }, [expenseCategories]);
-
-  useEffect(() => {
-    localStorage.setItem(getUserKey('incomeCategories'), JSON.stringify(incomeCategories));
-  }, [incomeCategories]);
-
-  const addExpense = (expenseData: Omit<Expense, 'id'>) => {
-    const newExpense: Expense = {
-      ...expenseData,
-      id: Date.now().toString(),
-      userId: user!.id
-    };
-    setExpenses(prev => [newExpense, ...prev]);
-  };
-
-  const addIncome = (incomeData: Omit<Income, 'id'>) => {
-    const newIncome: Income = {
-      ...incomeData,
-      id: Date.now().toString(),
-      userId: user!.id
-    };
-    setIncomes(prev => [newIncome, ...prev]);
-  };
-
-  const updateExpense = (updatedExpense: Expense) => {
-    setExpenses(prev => prev.map(expense => 
-      expense.id === updatedExpense.id ? updatedExpense : expense
-    ));
-  };
-
-  const updateIncome = (updatedIncome: Income) => {
-    setIncomes(prev => prev.map(income => 
-      income.id === updatedIncome.id ? updatedIncome : income
-    ));
-  };
-
-  const deleteExpense = (id: string) => {
-    setExpenses(prev => prev.filter(expense => expense.id !== id));
-  };
-
-  const deleteIncome = (id: string) => {
-    setIncomes(prev => prev.filter(income => income.id !== id));
-  };
-
-  const addBudget = (budgetData: Omit<Budget, 'id'>) => {
-    const newBudget: Budget = {
-      ...budgetData,
-      id: Date.now().toString()
-    };
-    setBudgets(prev => [...prev, newBudget]);
-  };
-
-  const deleteBudget = (id: string) => {
-    setBudgets(prev => prev.filter(budget => budget.id !== id));
-  };
-
-  const addTithe = (titheData: Omit<Tithe, 'id'>) => {
-    const newTithe: Tithe = {
-      ...titheData,
-      id: Date.now().toString()
-    };
-    setTithes(prev => [newTithe, ...prev]);
-  };
-
-  const updateTithe = (updatedTithe: Tithe) => {
-    setTithes(prev => prev.map(tithe => 
-      tithe.id === updatedTithe.id ? updatedTithe : tithe
-    ));
-  };
-
-  const deleteTithe = (id: string) => {
-    setTithes(prev => prev.filter(tithe => tithe.id !== id));
-  };
-
-  const addTitheGoal = (goalData: Omit<TitheGoal, 'id'>) => {
-    const newGoal: TitheGoal = {
-      ...goalData,
-      id: Date.now().toString()
-    };
-    setTitheGoals(prev => [...prev, newGoal]);
-  };
-
-  const deleteTitheGoal = (id: string) => {
-    setTitheGoals(prev => prev.filter(goal => goal.id !== id));
-  };
-
-  const addExpenseCategory = (categoryData: Omit<Category, 'id'>) => {
-    const newCategory: Category = {
-      ...categoryData,
-      id: Date.now().toString()
-    };
-    setExpenseCategories(prev => [...prev, newCategory]);
-  };
-
-  const updateExpenseCategory = (updatedCategory: Category) => {
-    setExpenseCategories(prev => prev.map(category => 
-      category.id === updatedCategory.id ? updatedCategory : category
-    ));
-  };
-
-  const deleteExpenseCategory = (id: string) => {
-    setExpenseCategories(prev => prev.filter(category => category.id !== id));
-  };
-
-  const addIncomeCategory = (categoryData: Omit<Category, 'id'>) => {
-    const newCategory: Category = {
-      ...categoryData,
-      id: Date.now().toString()
-    };
-    setIncomeCategories(prev => [...prev, newCategory]);
-  };
-
-  const updateIncomeCategory = (updatedCategory: Category) => {
-    setIncomeCategories(prev => prev.map(category => 
-      category.id === updatedCategory.id ? updatedCategory : category
-    ));
-  };
-
-  const deleteIncomeCategory = (id: string) => {
-    setIncomeCategories(prev => prev.filter(category => category.id !== id));
-  };
+  }, [user, loading, expenseCategories.length, incomeCategories.length, t]);
 
   const handleEditTithe = (tithe: Tithe) => {
     updateTithe(tithe);
@@ -240,19 +92,19 @@ function MainApplicationContent() {
 
   const handleFormSubmit = (expenseData: Omit<Expense, 'id'>) => {
     if (editingExpense) {
-      updateExpense({ ...expenseData, id: editingExpense.id });
+      updateExpense({ ...expenseData, id: editingExpense.id, userId: user!.id });
       setEditingExpense(null);
     } else {
-      addExpense(expenseData);
+      addExpense({ ...expenseData, userId: user!.id });
     }
   };
 
   const handleIncomeFormSubmit = (incomeData: Omit<Income, 'id'>) => {
     if (editingIncome) {
-      updateIncome({ ...incomeData, id: editingIncome.id });
+      updateIncome({ ...incomeData, id: editingIncome.id, userId: user!.id });
       setEditingIncome(null);
     } else {
-      addIncome(incomeData);
+      addIncome({ ...incomeData, userId: user!.id });
     }
   };
 
@@ -270,6 +122,17 @@ function MainApplicationContent() {
   const totalIncome = calculateTotalIncome(incomes);
   const netIncome = totalIncome - totalExpenses;
   const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">{t('common.loading')}</p>
+        </div>
+      </div>
+    );
+  }
 
   const tabs = [
     { id: 'expenses', label: t('nav.expenses'), icon: List },
@@ -507,10 +370,21 @@ function MainApplicationContent() {
 }
 
 function AuthGate() {
-  const { user } = useAuth();
+  const { user, loading } = useSupabaseAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
-    return <LoginForm />;
+    return <SupabaseAuth />;
   }
 
   return <MainApplicationContent />;
@@ -518,13 +392,11 @@ function AuthGate() {
 
 function App() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <LanguageProvider>
-          <AuthGate />
-        </LanguageProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthGate />
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 
