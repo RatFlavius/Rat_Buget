@@ -18,7 +18,7 @@ import { formatCurrency, calculateTotalIncome } from './utils/calculations';
 import { getDefaultCategories, getIncomeCategories } from './data/categories';
 import SupabaseAuth from './components/SupabaseAuth';
 import JointFinances from './components/JointFinances';
-import { Home } from 'lucide-react';
+import { Home, AlertCircle } from 'lucide-react';
 
 function MainApplicationContent() {
   const { t, currency, exchangeRates } = useLanguage();
@@ -130,6 +130,18 @@ function MainApplicationContent() {
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">{t('common.loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error boundary pentru debugging
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Nu ești autentificat</p>
         </div>
       </div>
     );
