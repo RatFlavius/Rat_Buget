@@ -56,9 +56,11 @@ const SupabaseAuth: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <div className="p-3 bg-blue-600 rounded-xl">
-                <Wallet className="w-8 h-8 text-white" />
-              </div>
+              <img 
+                src="/LogoBugetRat.png" 
+                alt="R.A.T Budget Logo" 
+                className="w-16 h-16 rounded-xl"
+              />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               {t('header.title')}
