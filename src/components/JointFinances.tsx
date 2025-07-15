@@ -5,6 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
 import { formatCurrency, formatDate } from '../utils/calculations';
 import * as LucideIcons from 'lucide-react';
+import FinancialCharts from './FinancialCharts';
 
 interface JointFinancesProps {
   expenses: Expense[];
@@ -282,6 +283,8 @@ const JointFinances: React.FC<JointFinancesProps> = ({
       </div>
 
       {/* Family Members Summary */}
+      <FinancialCharts expenses={expenses} incomes={incomes} />
+
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Sumar pe Membri Familie
