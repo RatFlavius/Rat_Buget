@@ -32,14 +32,24 @@ const JointFinances: React.FC<JointFinancesProps> = ({
   onDeleteIncome
 }) => {
   const { t, currency, exchangeRates } = useLanguage();
-  const { user } = useSupabaseAuth();
+  const { user, familyMembers } = useSupabaseAuth();
   const [activeView, setActiveView] = useState<'household' | 'personal'>('household');
+  const [selectedMember, setSelectedMember] = useState<string | null>(null);
 
   // Filter expenses and incomes by type
   const householdExpenses = expenses.filter(expense => expense.paidBy === 'household');
   const personalExpenses = expenses.filter(expense => expense.paidBy === 'user');
   const householdIncomes = incomes.filter(income => income.earnedBy === 'household');
   const personalIncomes = incomes.filter(income => income.earnedBy === 'user');
+
+  // Filter by selected member if any
+  const filteredExpenses = selectedMember 
+    ? expenses.filter(expense => expense.userId === selectedMember)
+    : (activeView === 'household' ? householdExpenses : personalExpenses);
+    
+  const filteredIncomes = selectedMember
+    ? incomes.filter(income => income.userId === selectedMember)
+    : (activeView === 'household' ? householdIncomes : personalIncomes);
 
   // Calculate totals
   const totalHouseholdExpenses = householdExpenses.reduce((sum, expense) => sum + expense.amount, 0);
@@ -49,6 +59,17 @@ const JointFinances: React.FC<JointFinancesProps> = ({
 
   const householdBalance = totalHouseholdIncome - totalHouseholdExpenses;
   const personalBalance = totalPersonalIncome - totalPersonalExpenses;
+
+  // Calculate member-specific totals
+  const getMemberTotals = (memberId: string) => {
+    const memberExpenses = expenses.filter(expense => expense.userId === memberId);
+    const memberIncomes = incomes.filter(income => income.userId === memberId);
+    
+    return {
+      expenses: memberExpenses.reduce((sum, expense) => sum + expense.amount, 0),
+      incomes: memberIncomes.reduce((sum, income) => sum + income.amount, 0),
+    };
+  };
 
   const getCategoryIcon = (categoryName: string, categories: Category[]) => {
     const category = categories.find(cat => cat.name === categoryName);
@@ -64,7 +85,11 @@ const JointFinances: React.FC<JointFinancesProps> = ({
   };
 
   const getUserName = () => {
-    return user?.user_metadata?.name || user?.email?.split('@')[0] || 'User';
+    if (selectedMember) {
+      const member = familyMembers.find(m => m.userId === selectedMember);
+      return member?.nickname || member?.profile?.name || 'User';
+    }
+    return user?.nickname || user?.name || 'User';
   };
 
   const renderTransactionList = (
@@ -195,6 +220,7 @@ const JointFinances: React.FC<JointFinancesProps> = ({
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Household Expenses */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
@@ -209,6 +235,7 @@ const JointFinances: React.FC<JointFinancesProps> = ({
           </div>
         </div>
 
+        {/* Household Income */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
@@ -223,6 +250,7 @@ const JointFinances: React.FC<JointFinancesProps> = ({
           </div>
         </div>
 
+        {/* Personal Expenses */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
@@ -237,6 +265,7 @@ const JointFinances: React.FC<JointFinancesProps> = ({
           </div>
         </div>
 
+        {/* Personal Income */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
@@ -250,6 +279,81 @@ const JointFinances: React.FC<JointFinancesProps> = ({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Family Members Summary */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Sumar pe Membri Familie
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {familyMembers.map((member) => {
+            const totals = getMemberTotals(member.userId);
+            const balance = totals.incomes - totals.expenses;
+            
+            return (
+              <div
+                key={member.id}
+                className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                  selectedMember === member.userId
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                }`}
+                onClick={() => setSelectedMember(selectedMember === member.userId ? null : member.userId)}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-900 dark:text-white">
+                    {member.nickname}
+                  </h4>
+                  {member.userId === user?.id && (
+                    <span className="px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 text-xs rounded-full">
+                      Tu
+                    </span>
+                  )}
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Cheltuieli:</span>
+                    <span className="text-red-600 dark:text-red-400 font-medium">
+                      {formatCurrency(totals.expenses, currency, exchangeRates)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Venituri:</span>
+                    <span className="text-green-600 dark:text-green-400 font-medium">
+                      {formatCurrency(totals.incomes, currency, exchangeRates)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-600">
+                    <span className="text-gray-900 dark:text-white font-medium">Balanță:</span>
+                    <span className={`font-bold ${
+                      balance >= 0 
+                        ? 'text-green-600 dark:text-green-400' 
+                        : 'text-red-600 dark:text-red-400'
+                    }`}>
+                      {formatCurrency(balance, currency, exchangeRates)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        {selectedMember && (
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              Afișezi tranzacțiile pentru: <strong>{getUserName()}</strong>
+              <button
+                onClick={() => setSelectedMember(null)}
+                className="ml-2 text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                (Anulează filtrul)
+              </button>
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Balance Cards */}
@@ -292,41 +396,46 @@ const JointFinances: React.FC<JointFinancesProps> = ({
       </div>
 
       {/* View Toggle */}
-      <div className="flex justify-center">
-        <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-          <button
-            onClick={() => setActiveView('household')}
-            className={`px-4 py-2 rounded-md transition-colors ${
-              activeView === 'household'
-                ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            <Home className="w-4 h-4 inline mr-2" />
-            Gospodărie
-          </button>
-          <button
-            onClick={() => setActiveView('personal')}
-            className={`px-4 py-2 rounded-md transition-colors ${
-              activeView === 'personal'
-                ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
-          >
-            <User className="w-4 h-4 inline mr-2" />
-            Personal
-          </button>
+      {!selectedMember && (
+        <div className="flex justify-center">
+          <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+            <button
+              onClick={() => setActiveView('household')}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                activeView === 'household'
+                  ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <Home className="w-4 h-4 inline mr-2" />
+              Gospodărie
+            </button>
+            <button
+              onClick={() => setActiveView('personal')}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                activeView === 'personal'
+                  ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <User className="w-4 h-4 inline mr-2" />
+              Personal
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {activeView === 'household' ? 'Cheltuieli Gospodărie' : 'Cheltuieli Personale'}
+            {selectedMember 
+              ? `Cheltuieli - ${getUserName()}`
+              : (activeView === 'household' ? 'Cheltuieli Gospodărie' : 'Cheltuieli Personale')
+            }
           </h3>
           {renderTransactionList(
-            activeView === 'household' ? householdExpenses : personalExpenses,
+            filteredExpenses,
             'expense',
             expenseCategories
           )}
@@ -334,10 +443,13 @@ const JointFinances: React.FC<JointFinancesProps> = ({
 
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {activeView === 'household' ? 'Venituri Gospodărie' : 'Venituri Personale'}
+            {selectedMember 
+              ? `Venituri - ${getUserName()}`
+              : (activeView === 'household' ? 'Venituri Gospodărie' : 'Venituri Personale')
+            }
           </h3>
           {renderTransactionList(
-            activeView === 'household' ? householdIncomes : personalIncomes,
+            filteredIncomes,
             'income',
             incomeCategories
           )}

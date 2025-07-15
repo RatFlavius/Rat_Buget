@@ -13,12 +13,13 @@ import Statistics from './components/Statistics';
 import BudgetManager from './components/BudgetManager';
 import TitheManager from './components/TitheManager';
 import CategoryManager from './components/CategoryManager';
+import FamilyManager from './components/FamilyManager';
 import { formatCurrency, calculateTotalIncome } from './utils/calculations';
 import { getDefaultCategories, getIncomeCategories } from './data/categories';
 import SupabaseAuth from './components/SupabaseAuth';
 import JointFinances from './components/JointFinances';
 import { useSupabaseAuth } from './hooks/useSupabaseAuth';
-import { Home, AlertCircle } from 'lucide-react';
+import { Home, AlertCircle, Users } from 'lucide-react';
 
 // Simple Loading component
 const LoadingScreen = () => (
@@ -50,7 +51,7 @@ const ErrorScreen = ({ error, onRetry }: { error: string; onRetry: () => void })
 
 function MainApplicationContent() {
   const { t, currency, exchangeRates } = useLanguage();
-  const { user } = useSupabaseAuth();
+  const { user, familyMembers, loadFamilyMembers } = useSupabaseAuth();
   
   // Use Supabase for data storage
   const {
@@ -84,11 +85,18 @@ function MainApplicationContent() {
     deleteIncomeCategory,
   } = useSupabaseData(user?.id);
   
-  const [activeTab, setActiveTab] = useState<'expenses' | 'income' | 'statistics' | 'budgets' | 'tithes' | 'categories' | 'joint'>('joint');
+  const [activeTab, setActiveTab] = useState<'expenses' | 'income' | 'statistics' | 'budgets' | 'tithes' | 'categories' | 'joint' | 'family'>('joint');
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showIncomeForm, setShowIncomeForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [editingIncome, setEditingIncome] = useState<Income | null>(null);
+
+  // Load family members when component mounts
+  useEffect(() => {
+    if (user && loadFamilyMembers) {
+      loadFamilyMembers();
+    }
+  }, [user, loadFamilyMembers]);
 
   // Show error if data loading failed
   if (dataError) {
@@ -215,6 +223,7 @@ function MainApplicationContent() {
 
   const tabs = [
     { id: 'joint', label: t('nav.joint'), icon: Home },
+    { id: 'family', label: 'Familie', icon: Users },
     { id: 'expenses', label: t('nav.expenses'), icon: List },
     { id: 'income', label: t('nav.income'), icon: TrendingUp },
     { id: 'statistics', label: t('nav.statistics'), icon: BarChart3 },
@@ -426,6 +435,10 @@ function MainApplicationContent() {
                 onDeleteExpense={deleteExpense}
                 onDeleteIncome={deleteIncome}
               />
+            )}
+
+            {activeTab === 'family' && (
+              <FamilyManager />
             )}
           </div>
         </div>

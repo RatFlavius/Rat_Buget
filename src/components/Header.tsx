@@ -76,10 +76,10 @@ export function Header() {
                   />
                   <div className="hidden sm:block text-left">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {user.user_metadata?.name || user.email?.split('@')[0] || 'User'}
+                      {user.user_metadata?.nickname || user.user_metadata?.name || user.email?.split('@')[0] || 'User'}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {user.email}
+                      {user.email} {user.user_metadata?.role === 'admin' && '• Admin'}
                     </p>
                   </div>
                 </div>
