@@ -16,10 +16,8 @@ const SupabaseAuth: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Debug effect
-  useEffect(() => {
-    console.log('SupabaseAuth: Component mounted');
-  }, []);
+  console.log('SupabaseAuth: Component rendering');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -165,6 +163,17 @@ const SupabaseAuth: React.FC = () => {
             >
               {isLogin ? t('auth.needAccount') : t('auth.haveAccount')}
             </button>
+          </div>
+
+          {/* Demo Login */}
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-3">
+              Pentru testare rapidă:
+            </p>
+            <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+              <p><strong>Email:</strong> test@example.com</p>
+              <p><strong>Parolă:</strong> test123</p>
+            </div>
           </div>
         </div>
       </div>

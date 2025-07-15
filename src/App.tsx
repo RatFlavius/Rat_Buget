@@ -210,33 +210,7 @@ function MainApplicationContent() {
   const yearlyIncomesTotal = yearlyIncomes.reduce((sum, income) => sum + income.amount, 0);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">R.A.T Budget</h2>
-          <p className="text-gray-600 dark:text-gray-400">Se încarcă aplicația...</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Reîncarcă
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Error boundary pentru debugging
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Nu ești autentificat</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   const tabs = [
@@ -487,6 +461,8 @@ function AuthGate() {
   const [error, setError] = useState<string | null>(null);
   const [showDebug, setShowDebug] = useState(false);
 
+  console.log('AuthGate render:', { user: !!user, authLoading, error });
+
   const handleRetry = () => {
     setError(null);
     window.location.reload();
@@ -513,10 +489,6 @@ function AuthGate() {
     };
   }, []);
 
-  // Debug info
-  useEffect(() => {
-    console.log('AuthGate state:', { user, authLoading, error });
-  }, [user, authLoading, error]);
   if (error) {
     return <ErrorScreen error={error} onRetry={handleRetry} />;
   }
@@ -526,14 +498,17 @@ function AuthGate() {
   }
 
   if (!user) {
+    console.log('Rendering SupabaseAuth component');
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <SupabaseAuth />
         {showDebug && (
-          <div className="fixed bottom-4 right-4 bg-black text-white p-4 rounded text-xs">
+          <div className="fixed bottom-4 right-4 bg-black text-white p-4 rounded text-xs max-w-xs">
             <p>User: {user ? 'Logged in' : 'Not logged in'}</p>
             <p>Loading: {authLoading ? 'Yes' : 'No'}</p>
             <p>Error: {error || 'None'}</p>
+            <p>Supabase URL: {import.meta.env.VITE_SUPABASE_URL ? 'Set' : 'Missing'}</p>
+            <p>Supabase Key: {import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Set' : 'Missing'}</p>
           </div>
         )}
         <button
@@ -546,10 +521,12 @@ function AuthGate() {
     );
   }
 
+  console.log('Rendering MainApplicationContent');
   return <MainApplicationContent />;
 }
 
 function App() {
+  console.log('App component render');
   return (
     <ThemeProvider>
       <LanguageProvider>
