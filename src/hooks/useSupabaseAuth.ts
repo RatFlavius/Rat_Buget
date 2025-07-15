@@ -6,12 +6,29 @@ export const useSupabaseAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
+
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!mounted) return;
+      
+      if (error) {
+        console.error('Error getting session:', error);
+        setError('Eroare la obținerea sesiunii');
+        setLoading(false);
+        return;
+      }
+      
       setSession(session);
       setUser(session?.user ?? null);
+      setLoading(false);
+    }).catch(err => {
+      if (!mounted) return;
+      console.error('Error in getSession:', err);
+      setError('Eroare la conectarea cu Supabase');
       setLoading(false);
     });
 
@@ -19,26 +36,42 @@ export const useSupabaseAuth = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      setError(null);
 
       // Create profile when user signs up
       if (session?.user && _event === 'SIGNED_IN') {
-        await createUserProfile(session.user);
+        try {
+          await createUserProfile(session.user);
+        } catch (error) {
+          console.error('Error creating profile:', error);
+          // Don't set error here as it's not critical
+        }
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const createUserProfile = async (user: User) => {
     try {
       // Check if profile already exists
-      const { data: existingProfiles } = await supabase
+      const { data: existingProfiles, error: selectError } = await supabase
         .from('profiles')
         .select('id')
         .eq('user_id', user.id);
+
+      if (selectError) {
+        console.error('Error checking existing profiles:', selectError);
+        return; // Don't throw, just return
+      }
 
       if (!existingProfiles || existingProfiles.length === 0) {
         // Create new profile
@@ -53,10 +86,12 @@ export const useSupabaseAuth = () => {
 
         if (error) {
           console.error('Error creating profile:', error);
+          // Don't throw, just log
         }
       }
     } catch (error) {
       console.error('Error in createUserProfile:', error);
+      // Don't throw, just log
     }
   };
 
@@ -107,6 +142,7 @@ export const useSupabaseAuth = () => {
     user,
     session,
     loading,
+    error,
     signUp,
     signIn,
     signOut,

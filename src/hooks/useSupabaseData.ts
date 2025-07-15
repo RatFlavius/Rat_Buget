@@ -11,11 +11,14 @@ export const useSupabaseData = (userId: string | undefined) => {
   const [expenseCategories, setExpenseCategories] = useState<Category[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Load data when user changes
   useEffect(() => {
     if (userId) {
       loadAllData();
+    } else {
+      setLoading(false);
     }
   }, [userId]);
 
@@ -23,6 +26,7 @@ export const useSupabaseData = (userId: string | undefined) => {
     if (!userId) return;
 
     setLoading(true);
+    setError(null);
     try {
       await Promise.all([
         loadExpenses(),
@@ -34,6 +38,7 @@ export const useSupabaseData = (userId: string | undefined) => {
       ]);
     } catch (error) {
       console.error('Error loading data:', error);
+      setError('Eroare la încărcarea datelor din Supabase');
     } finally {
       setLoading(false);
     }
@@ -42,145 +47,199 @@ export const useSupabaseData = (userId: string | undefined) => {
   const loadExpenses = async () => {
     if (!userId) return;
 
-    const { data, error } = await supabase
-      .from('expenses')
-      .select('*')
-      .eq('user_id', userId)
-      .order('date', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('*')
+        .eq('user_id', userId)
+        .order('date', { ascending: false });
 
-    if (error) throw error;
+      if (error) {
+        console.error('Error loading expenses:', error);
+        return; // Don't throw, just log and continue
+      }
 
-    const formattedExpenses: Expense[] = data.map(expense => ({
-      id: expense.id,
-      title: expense.title,
-      amount: expense.amount,
-      category: expense.category,
-      date: expense.date,
-      description: expense.description || '',
-      paidBy: expense.paid_by,
-      userId: expense.user_id,
-    }));
+      if (data) {
+        const formattedExpenses: Expense[] = data.map(expense => ({
+          id: expense.id,
+          title: expense.title,
+          amount: expense.amount,
+          category: expense.category,
+          date: expense.date,
+          description: expense.description || '',
+          paidBy: expense.paid_by,
+          userId: expense.user_id,
+        }));
 
-    setExpenses(formattedExpenses);
+        setExpenses(formattedExpenses);
+      }
+    } catch (error) {
+      console.error('Error in loadExpenses:', error);
+    }
   };
 
   const loadIncomes = async () => {
     if (!userId) return;
 
-    const { data, error } = await supabase
-      .from('incomes')
-      .select('*')
-      .eq('user_id', userId)
-      .order('date', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('incomes')
+        .select('*')
+        .eq('user_id', userId)
+        .order('date', { ascending: false });
 
-    if (error) throw error;
+      if (error) {
+        console.error('Error loading incomes:', error);
+        return;
+      }
 
-    const formattedIncomes: Income[] = data.map(income => ({
-      id: income.id,
-      title: income.title,
-      amount: income.amount,
-      category: income.category,
-      date: income.date,
-      description: income.description || '',
-      earnedBy: income.earned_by,
-      userId: income.user_id,
-    }));
+      if (data) {
+        const formattedIncomes: Income[] = data.map(income => ({
+          id: income.id,
+          title: income.title,
+          amount: income.amount,
+          category: income.category,
+          date: income.date,
+          description: income.description || '',
+          earnedBy: income.earned_by,
+          userId: income.user_id,
+        }));
 
-    setIncomes(formattedIncomes);
+        setIncomes(formattedIncomes);
+      }
+    } catch (error) {
+      console.error('Error in loadIncomes:', error);
+    }
   };
 
   const loadBudgets = async () => {
     if (!userId) return;
 
-    const { data, error } = await supabase
-      .from('budgets')
-      .select('*')
-      .eq('user_id', userId);
+    try {
+      const { data, error } = await supabase
+        .from('budgets')
+        .select('*')
+        .eq('user_id', userId);
 
-    if (error) throw error;
+      if (error) {
+        console.error('Error loading budgets:', error);
+        return;
+      }
 
-    const formattedBudgets: Budget[] = data.map(budget => ({
-      id: budget.id,
-      category: budget.category,
-      amount: budget.amount,
-      period: budget.period,
-    }));
+      if (data) {
+        const formattedBudgets: Budget[] = data.map(budget => ({
+          id: budget.id,
+          category: budget.category,
+          amount: budget.amount,
+          period: budget.period,
+        }));
 
-    setBudgets(formattedBudgets);
+        setBudgets(formattedBudgets);
+      }
+    } catch (error) {
+      console.error('Error in loadBudgets:', error);
+    }
   };
 
   const loadTithes = async () => {
     if (!userId) return;
 
-    const { data, error } = await supabase
-      .from('tithes')
-      .select('*')
-      .eq('user_id', userId)
-      .order('date', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('tithes')
+        .select('*')
+        .eq('user_id', userId)
+        .order('date', { ascending: false });
 
-    if (error) throw error;
+      if (error) {
+        console.error('Error loading tithes:', error);
+        return;
+      }
 
-    const formattedTithes: Tithe[] = data.map(tithe => ({
-      id: tithe.id,
-      amount: tithe.amount,
-      date: tithe.date,
-      description: tithe.description || '',
-      recipient: tithe.recipient,
-    }));
+      if (data) {
+        const formattedTithes: Tithe[] = data.map(tithe => ({
+          id: tithe.id,
+          amount: tithe.amount,
+          date: tithe.date,
+          description: tithe.description || '',
+          recipient: tithe.recipient,
+        }));
 
-    setTithes(formattedTithes);
+        setTithes(formattedTithes);
+      }
+    } catch (error) {
+      console.error('Error in loadTithes:', error);
+    }
   };
 
   const loadTitheGoals = async () => {
     if (!userId) return;
 
-    const { data, error } = await supabase
-      .from('tithe_goals')
-      .select('*')
-      .eq('user_id', userId);
+    try {
+      const { data, error } = await supabase
+        .from('tithe_goals')
+        .select('*')
+        .eq('user_id', userId);
 
-    if (error) throw error;
+      if (error) {
+        console.error('Error loading tithe goals:', error);
+        return;
+      }
 
-    const formattedGoals: TitheGoal[] = data.map(goal => ({
-      id: goal.id,
-      targetPercentage: goal.target_percentage,
-      period: goal.period,
-      isActive: goal.is_active,
-    }));
+      if (data) {
+        const formattedGoals: TitheGoal[] = data.map(goal => ({
+          id: goal.id,
+          targetPercentage: goal.target_percentage,
+          period: goal.period,
+          isActive: goal.is_active,
+        }));
 
-    setTitheGoals(formattedGoals);
+        setTitheGoals(formattedGoals);
+      }
+    } catch (error) {
+      console.error('Error in loadTitheGoals:', error);
+    }
   };
 
   const loadCategories = async () => {
     if (!userId) return;
 
-    const { data, error } = await supabase
-      .from('categories')
-      .select('*')
-      .eq('user_id', userId);
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('user_id', userId);
 
-    if (error) throw error;
-
-    const expenseCategs: Category[] = [];
-    const incomeCategs: Category[] = [];
-
-    data.forEach(category => {
-      const formattedCategory: Category = {
-        id: category.id,
-        name: category.name,
-        color: category.color,
-        icon: category.icon,
-      };
-
-      if (category.type === 'expense') {
-        expenseCategs.push(formattedCategory);
-      } else {
-        incomeCategs.push(formattedCategory);
+      if (error) {
+        console.error('Error loading categories:', error);
+        return;
       }
-    });
 
-    setExpenseCategories(expenseCategs);
-    setIncomeCategories(incomeCategs);
+      if (data) {
+        const expenseCategs: Category[] = [];
+        const incomeCategs: Category[] = [];
+
+        data.forEach(category => {
+          const formattedCategory: Category = {
+            id: category.id,
+            name: category.name,
+            color: category.color,
+            icon: category.icon,
+          };
+
+          if (category.type === 'expense') {
+            expenseCategs.push(formattedCategory);
+          } else {
+            incomeCategs.push(formattedCategory);
+          }
+        });
+
+        setExpenseCategories(expenseCategs);
+        setIncomeCategories(incomeCategs);
+      }
+    } catch (error) {
+      console.error('Error in loadCategories:', error);
+    }
   };
 
   // CRUD operations for expenses
@@ -568,6 +627,7 @@ export const useSupabaseData = (userId: string | undefined) => {
     expenseCategories,
     incomeCategories,
     loading,
+    error,
 
     // Methods
     loadAllData,
