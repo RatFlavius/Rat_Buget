@@ -22,6 +22,7 @@ export const useSupabaseAuth = () => {
         if (error) {
           console.error('Error getting session:', error);
           setError('Eroare la obținerea sesiunii');
+        }
       } catch (err) {
         if (!mounted) return;
         console.error('Error in getSession:', err);
@@ -36,7 +37,9 @@ export const useSupabaseAuth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return;
       
-      }
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
       
       if (session?.user && _event === 'SIGNED_IN') {
         try {
