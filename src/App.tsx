@@ -20,7 +20,7 @@ import SupabaseAuth from './components/SupabaseAuth';
 import JointFinances from './components/JointFinances';
 import { Home, AlertCircle } from 'lucide-react';
 
-// Loading component
+// Simple Loading component
 const LoadingScreen = () => (
   <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
     <div className="text-center">
@@ -31,7 +31,7 @@ const LoadingScreen = () => (
   </div>
 );
 
-// Error component
+// Simple Error component
 const ErrorScreen = ({ error, onRetry }: { error: string; onRetry: () => void }) => (
   <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
     <div className="text-center max-w-md mx-auto p-6">
@@ -54,13 +54,13 @@ function MainApplicationContent() {
   
   // Use Supabase for data storage
   const {
-    expenses,
-    incomes,
-    budgets,
-    tithes,
-    titheGoals,
-    expenseCategories,
-    incomeCategories,
+    expenses = [],
+    incomes = [],
+    budgets = [],
+    tithes = [],
+    titheGoals = [],
+    expenseCategories = [],
+    incomeCategories = [],
     loading,
     error: dataError,
     addExpense,
@@ -111,23 +111,25 @@ function MainApplicationContent() {
 
   // Initialize default categories if none exist
   useEffect(() => {
-    if (user && !loading && expenseCategories.length === 0) {
+    if (user && !loading && expenseCategories.length === 0 && addExpenseCategory) {
       const defaultExpenseCategories = getDefaultCategories(t);
       defaultExpenseCategories.forEach(category => {
-        addExpenseCategory(category);
+        addExpenseCategory(category).catch(console.error);
       });
     }
 
-    if (user && !loading && incomeCategories.length === 0) {
+    if (user && !loading && incomeCategories.length === 0 && addIncomeCategory) {
       const defaultIncomeCategories = getIncomeCategories(t);
       defaultIncomeCategories.forEach(category => {
-        addIncomeCategory(category);
+        addIncomeCategory(category).catch(console.error);
       });
     }
-  }, [user, loading, expenseCategories.length, incomeCategories.length, t]);
+  }, [user, loading, expenseCategories.length, incomeCategories.length, t, addExpenseCategory, addIncomeCategory]);
 
   const handleEditTithe = (tithe: Tithe) => {
-    updateTithe(tithe);
+    if (updateTithe) {
+      updateTithe(tithe).catch(console.error);
+    }
   };
 
   const handleEditExpense = (expense: Expense) => {
@@ -141,20 +143,24 @@ function MainApplicationContent() {
   };
 
   const handleFormSubmit = (expenseData: Omit<Expense, 'id'>) => {
+    if (!user || !addExpense || !updateExpense) return;
+    
     if (editingExpense) {
-      updateExpense({ ...expenseData, id: editingExpense.id, userId: user!.id });
+      updateExpense({ ...expenseData, id: editingExpense.id, userId: user.id }).catch(console.error);
       setEditingExpense(null);
     } else {
-      addExpense({ ...expenseData, userId: user!.id });
+      addExpense({ ...expenseData, userId: user.id }).catch(console.error);
     }
   };
 
   const handleIncomeFormSubmit = (incomeData: Omit<Income, 'id'>) => {
+    if (!user || !addIncome || !updateIncome) return;
+    
     if (editingIncome) {
-      updateIncome({ ...incomeData, id: editingIncome.id, userId: user!.id });
+      updateIncome({ ...incomeData, id: editingIncome.id, userId: user.id }).catch(console.error);
       setEditingIncome(null);
     } else {
-      addIncome({ ...incomeData, userId: user!.id });
+      addIncome({ ...incomeData, userId: user.id }).catch(console.error);
     }
   };
 
@@ -341,7 +347,7 @@ function MainApplicationContent() {
                 <ExpenseList
                   expenses={expenses}
                   categories={expenseCategories}
-                  onDeleteExpense={deleteExpense}
+                  onDeleteExpense={deleteExpense || (() => {})}
                   onEditExpense={handleEditExpense}
                 />
               </div>
@@ -365,7 +371,7 @@ function MainApplicationContent() {
                 <IncomeList
                   incomes={incomes}
                   categories={incomeCategories}
-                  onDeleteIncome={deleteIncome}
+                  onDeleteIncome={deleteIncome || (() => {})}
                   onEditIncome={handleEditIncome}
                 />
               </div>
@@ -380,7 +386,7 @@ function MainApplicationContent() {
               />
             )}
 
-            {activeTab === 'budgets' && (
+            {activeTab === 'budgets' && budgets && addBudget && deleteBudget && (
               <BudgetManager
                 budgets={budgets}
                 categories={expenseCategories}
@@ -390,7 +396,7 @@ function MainApplicationContent() {
               />
             )}
 
-            {activeTab === 'tithes' && (
+            {activeTab === 'tithes' && tithes && titheGoals && addTithe && deleteTithe && addTitheGoal && deleteTitheGoal && (
               <TitheManager
                 tithes={tithes}
                 titheGoals={titheGoals}
@@ -405,24 +411,28 @@ function MainApplicationContent() {
 
             {activeTab === 'categories' && (
               <div className="space-y-8">
-                <CategoryManager
-                  categories={expenseCategories}
-                  onAddCategory={addExpenseCategory}
-                  onUpdateCategory={updateExpenseCategory}
-                  onDeleteCategory={deleteExpenseCategory}
-                  type="expense"
-                />
-                <CategoryManager
-                  categories={incomeCategories}
-                  onAddCategory={addIncomeCategory}
-                  onUpdateCategory={updateIncomeCategory}
-                  onDeleteCategory={deleteIncomeCategory}
-                  type="income"
-                />
+                {addExpenseCategory && updateExpenseCategory && deleteExpenseCategory && (
+                  <CategoryManager
+                    categories={expenseCategories}
+                    onAddCategory={addExpenseCategory}
+                    onUpdateCategory={updateExpenseCategory}
+                    onDeleteCategory={deleteExpenseCategory}
+                    type="expense"
+                  />
+                )}
+                {addIncomeCategory && updateIncomeCategory && deleteIncomeCategory && (
+                  <CategoryManager
+                    categories={incomeCategories}
+                    onAddCategory={addIncomeCategory}
+                    onUpdateCategory={updateIncomeCategory}
+                    onDeleteCategory={deleteIncomeCategory}
+                    type="income"
+                  />
+                )}
               </div>
             )}
 
-            {activeTab === 'joint' && (
+            {activeTab === 'joint' && deleteExpense && deleteIncome && (
               <JointFinances
                 expenses={expenses}
                 incomes={incomes}
@@ -441,22 +451,26 @@ function MainApplicationContent() {
       </div>
 
       {/* Expense Form Modal */}
-      <ExpenseForm
-        isOpen={showExpenseForm}
-        categories={expenseCategories}
-        onClose={handleFormClose}
-        onAddExpense={handleFormSubmit}
-        editingExpense={editingExpense}
-      />
+      {showExpenseForm && (
+        <ExpenseForm
+          isOpen={showExpenseForm}
+          categories={expenseCategories}
+          onClose={handleFormClose}
+          onAddExpense={handleFormSubmit}
+          editingExpense={editingExpense}
+        />
+      )}
 
       {/* Income Form Modal */}
-      <IncomeForm
-        isOpen={showIncomeForm}
-        categories={incomeCategories}
-        onClose={handleIncomeFormClose}
-        onAddIncome={handleIncomeFormSubmit}
-        editingIncome={editingIncome}
-      />
+      {showIncomeForm && (
+        <IncomeForm
+          isOpen={showIncomeForm}
+          categories={incomeCategories}
+          onClose={handleIncomeFormClose}
+          onAddIncome={handleIncomeFormSubmit}
+          editingIncome={editingIncome}
+        />
+      )}
     </div>
   );
 }
