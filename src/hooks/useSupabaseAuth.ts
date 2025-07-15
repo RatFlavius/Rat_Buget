@@ -35,13 +35,12 @@ export const useSupabaseAuth = () => {
   const createUserProfile = async (user: User) => {
     try {
       // Check if profile already exists
-      const { data: existingProfile } = await supabase
+      const { data: existingProfiles } = await supabase
         .from('profiles')
         .select('id')
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', user.id);
 
-      if (!existingProfile) {
+      if (!existingProfiles || existingProfiles.length === 0) {
         // Create new profile
         const { error } = await supabase
           .from('profiles')
