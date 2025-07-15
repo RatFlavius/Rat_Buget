@@ -1,9 +1,8 @@
 import React from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
-import UserMenu from './UserMenu';
 import { Sun, Moon, Globe, DollarSign } from 'lucide-react';
+import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
 
 export function Header() {
   const { language, setLanguage, currency, setCurrency, t } = useLanguage();

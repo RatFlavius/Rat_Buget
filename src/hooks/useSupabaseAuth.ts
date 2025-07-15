@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
+// Ensure the hook is properly exported
 export const useSupabaseAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -12,38 +13,31 @@ export const useSupabaseAuth = () => {
     let mounted = true;
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          setError('Eroare la obținerea sesiunii');
+      } catch (err) {
+        if (!mounted) return;
+        console.error('Error in getSession:', err);
+        setError('Eroare la conectarea cu Supabase');
+        setLoading(false);
+      }
+    };
+
+    getInitialSession();
+
+    // Listen for auth changes  
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return;
       
-      if (error) {
-        console.error('Error getting session:', error);
-        setError('Eroare la obținerea sesiunii');
-        setLoading(false);
-        return;
       }
       
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    }).catch(err => {
-      if (!mounted) return;
-      console.error('Error in getSession:', err);
-      setError('Eroare la conectarea cu Supabase');
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!mounted) return;
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      setError(null);
-
-      // Create profile when user signs up
       if (session?.user && _event === 'SIGNED_IN') {
         try {
           await createUserProfile(session.user);

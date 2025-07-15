@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Plus, BarChart3, Target, List, Heart, TrendingUp } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
-import { useSupabaseAuth } from './hooks/useSupabaseAuth';
 import { useSupabaseData } from './hooks/useSupabaseData';
 import { Expense, Income, Budget, Tithe, TitheGoal, Category } from './types';
 import { Header } from './components/Header';
@@ -18,6 +17,7 @@ import { formatCurrency, calculateTotalIncome } from './utils/calculations';
 import { getDefaultCategories, getIncomeCategories } from './data/categories';
 import SupabaseAuth from './components/SupabaseAuth';
 import JointFinances from './components/JointFinances';
+import { useSupabaseAuth } from './hooks/useSupabaseAuth';
 import { Home, AlertCircle } from 'lucide-react';
 
 // Simple Loading component
