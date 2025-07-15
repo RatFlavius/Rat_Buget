@@ -1,13 +1,15 @@
 import React from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { Sun, Moon, Globe, DollarSign } from 'lucide-react';
+import { Sun, Moon, Globe, DollarSign, ChevronDown, LogOut } from 'lucide-react';
 import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
+import { useState } from 'react';
 
 export function Header() {
   const { language, setLanguage, currency, setCurrency, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-  const { user, signOut } = useSupabaseAuth();
+  const { user, signOut, familyMembers } = useSupabaseAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
@@ -69,6 +71,12 @@ export function Header() {
             {user && (
               <div className="flex items-center space-x-3">
                 <div className="flex items-center space-x-2">
+              {/* User Switch Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
                   <img
                     src={user.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.user_metadata?.name || user.email || 'User')}`}
                     alt={user.user_metadata?.name || 'User'}
@@ -82,13 +90,72 @@ export function Header() {
                       {user.email} {user.user_metadata?.role === 'admin' && '• Admin'}
                     </p>
                   </div>
-                </div>
-                <button
-                  onClick={signOut}
-                  className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                >
-                  Sign Out
+                  <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 </button>
+
+                {showUserMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowUserMenu(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20">
+                      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={user.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.user_metadata?.name || user.email || 'User')}`}
+                            alt={user.user_metadata?.name || 'User'}
+                            className="w-10 h-10 rounded-full"
+                          />
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-white">
+                              {user.user_metadata?.nickname || user.user_metadata?.name || user.email?.split('@')[0] || 'User'}
+                            </p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="py-2">
+                        {familyMembers.filter(m => m.userId !== user?.id).map((member) => (
+                          <button
+                            key={member.id}
+                            onClick={() => {
+                              // Switch user functionality would go here
+                              setShowUserMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2"
+                          >
+                            <img
+                              src={member.profile?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.nickname)}`}
+                              alt={member.nickname}
+                              className="w-6 h-6 rounded-full"
+                            />
+                            <div>
+                              <p className="font-medium">{member.nickname}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {member.profile?.email}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
+
+                        <button
+                          onClick={() => {
+                            signOut();
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center space-x-2"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
