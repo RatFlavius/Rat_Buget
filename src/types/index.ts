@@ -47,11 +47,29 @@ export interface Category {
   name: string;
   color: string;
   icon: string;
+  role: 'admin' | 'user';
+  nickname?: string;
+  familyId?: string;
+  createdBy?: string;
 }
 
+export interface FamilyMember {
+  id: string;
+  familyId: string;
+  userId: string;
+  role: 'admin' | 'user';
+  nickname: string;
+  createdBy?: string;
+  createdAt: string;
+  profile?: User;
+}
+
+  familyMembers: FamilyMember[];
 export type Theme = 'light' | 'dark';
 
+  createFamilyMember: (name: string, email: string, password: string, nickname: string) => Promise<boolean>;
 export interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
+  loadFamilyMembers: () => Promise<void>;
 }
