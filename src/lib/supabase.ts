@@ -22,30 +22,68 @@ export interface Database {
       profiles: {
         Row: {
           id: string;
-          user_id: string;
+          user_id: string | null;
           name: string;
           email: string;
           avatar: string | null;
+          role: 'admin' | 'user';
+          nickname: string | null;
+          family_id: string | null;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
-          user_id: string;
+          user_id?: string | null;
           name: string;
           email: string;
           avatar?: string | null;
+          role?: 'admin' | 'user';
+          nickname?: string | null;
+          family_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
-          user_id?: string;
+          user_id?: string | null;
           name?: string;
           email?: string;
           avatar?: string | null;
+          role?: 'admin' | 'user';
+          nickname?: string | null;
+          family_id?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      family_members: {
+        Row: {
+          id: string;
+          family_id: string;
+          user_id: string;
+          role: 'admin' | 'user';
+          nickname: string;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          family_id: string;
+          user_id: string;
+          role?: 'admin' | 'user';
+          nickname: string;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          family_id?: string;
+          user_id?: string;
+          role?: 'admin' | 'user';
+          nickname?: string;
+          created_by?: string;
+          created_at?: string;
         };
       };
       categories: {
