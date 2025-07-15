@@ -512,6 +512,8 @@ export const useSupabaseData = (userId: string | undefined) => {
   const addExpenseCategory = async (categoryData: Omit<Category, 'id'>) => {
     if (!userId) return;
 
+    console.log('Adding expense category:', categoryData);
+
     const { data, error } = await supabase
       .from('categories')
       .insert({
@@ -539,6 +541,8 @@ export const useSupabaseData = (userId: string | undefined) => {
 
   const addIncomeCategory = async (categoryData: Omit<Category, 'id'>) => {
     if (!userId) return;
+
+    console.log('Adding income category:', categoryData);
 
     const { data, error } = await supabase
       .from('categories')

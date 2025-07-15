@@ -46,6 +46,8 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
     e.preventDefault();
     if (!formData.name.trim()) return;
 
+    console.log('CategoryManager: Submitting category', { formData, type });
+
     const categoryData = {
       name: formData.name.trim(),
       color: formData.color,
@@ -53,9 +55,11 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
     };
 
     if (editingCategory) {
+      console.log('CategoryManager: Updating category');
       onUpdateCategory({ ...categoryData, id: editingCategory.id });
       setEditingCategory(null);
     } else {
+      console.log('CategoryManager: Adding new category');
       onAddCategory(categoryData);
     }
 

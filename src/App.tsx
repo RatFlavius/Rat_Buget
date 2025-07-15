@@ -14,6 +14,7 @@ import BudgetManager from './components/BudgetManager';
 import TitheManager from './components/TitheManager';
 import CategoryManager from './components/CategoryManager';
 import FamilyManager from './components/FamilyManager';
+import MiniChart from './components/MiniChart';
 import { formatCurrency, calculateTotalIncome } from './utils/calculations';
 import { getDefaultCategories, getIncomeCategories } from './data/categories';
 import SupabaseAuth from './components/SupabaseAuth';
@@ -239,7 +240,7 @@ function MainApplicationContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 relative">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Total Cheltuieli</p>
@@ -251,9 +252,14 @@ function MainApplicationContent() {
                 <BarChart3 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
+            <MiniChart 
+              income={currentMonthIncomesTotal} 
+              expenses={currentMonthExpensesTotal} 
+              type="monthly" 
+            />
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 relative">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Total Venituri</p>
@@ -265,9 +271,14 @@ function MainApplicationContent() {
                 <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
+            <MiniChart 
+              income={currentMonthIncomesTotal} 
+              expenses={currentMonthExpensesTotal} 
+              type="monthly" 
+            />
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 relative">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Cheltuieli Anul {currentYear}</p>
@@ -279,9 +290,14 @@ function MainApplicationContent() {
                 <Target className="w-6 h-6 text-red-600 dark:text-red-400" />
               </div>
             </div>
+            <MiniChart 
+              income={yearlyIncomesTotal} 
+              expenses={yearlyExpensesTotal} 
+              type="yearly" 
+            />
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 relative">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Venituri Anul {currentYear}</p>
@@ -293,6 +309,11 @@ function MainApplicationContent() {
                 <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
+            <MiniChart 
+              income={yearlyIncomesTotal} 
+              expenses={yearlyExpensesTotal} 
+              type="yearly" 
+            />
           </div>
         </div>
 
