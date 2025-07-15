@@ -485,6 +485,7 @@ function MainApplicationContent() {
 function AuthGate() {
   const { user, loading: authLoading } = useSupabaseAuth();
   const [error, setError] = useState<string | null>(null);
+  const [showDebug, setShowDebug] = useState(false);
 
   const handleRetry = () => {
     setError(null);
@@ -512,6 +513,10 @@ function AuthGate() {
     };
   }, []);
 
+  // Debug info
+  useEffect(() => {
+    console.log('AuthGate state:', { user, authLoading, error });
+  }, [user, authLoading, error]);
   if (error) {
     return <ErrorScreen error={error} onRetry={handleRetry} />;
   }
@@ -521,7 +526,24 @@ function AuthGate() {
   }
 
   if (!user) {
-    return <SupabaseAuth />;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <SupabaseAuth />
+        {showDebug && (
+          <div className="fixed bottom-4 right-4 bg-black text-white p-4 rounded text-xs">
+            <p>User: {user ? 'Logged in' : 'Not logged in'}</p>
+            <p>Loading: {authLoading ? 'Yes' : 'No'}</p>
+            <p>Error: {error || 'None'}</p>
+          </div>
+        )}
+        <button
+          onClick={() => setShowDebug(!showDebug)}
+          className="fixed bottom-4 left-4 bg-blue-600 text-white px-3 py-1 rounded text-xs"
+        >
+          Debug
+        </button>
+      </div>
+    );
   }
 
   return <MainApplicationContent />;

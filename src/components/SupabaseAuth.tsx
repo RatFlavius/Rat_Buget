@@ -16,13 +16,19 @@ const SupabaseAuth: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Debug effect
+  useEffect(() => {
+    console.log('SupabaseAuth: Component mounted');
+  }, []);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
+    console.log('SupabaseAuth: Form submitted', { isLogin, email: formData.email });
     try {
       if (isLogin) {
+        console.log('SupabaseAuth: Attempting sign in');
         await signIn(formData.email, formData.password);
       } else {
         if (!formData.name.trim()) {
@@ -30,6 +36,7 @@ const SupabaseAuth: React.FC = () => {
           setLoading(false);
           return;
         }
+        console.log('SupabaseAuth: Attempting sign up');
         const result = await signUp(formData.email, formData.password, formData.name);
         if (result.user && !result.user.email_confirmed_at) {
           setError('Cont creat cu succes! Verifică-ți email-ul pentru a confirma contul.');
@@ -56,15 +63,16 @@ const SupabaseAuth: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <img 
-                src="/LogoBugetRat.png" 
-                alt="R.A.T Budget Logo" 
-                className="w-16 h-16 rounded-xl"
-              />
+              <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">RAT</span>
+              </div>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               R.A.T Buget
             </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              {isLogin ? t('auth.welcomeBack') : t('auth.createAccount')}
+            </p>
           </div>
 
           {/* Form */}

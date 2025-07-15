@@ -11,14 +11,18 @@ export const useSupabaseAuth = () => {
 
   useEffect(() => {
     let mounted = true;
-    let timeoutId: NodeJS.Timeout;
+    
+    console.log('useSupabaseAuth: Starting initialization');
 
     // Get initial session
     const getInitialSession = async () => {
       try {
+        console.log('useSupabaseAuth: Getting initial session');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (!mounted) return;
+        
+        console.log('useSupabaseAuth: Session data:', { session, error });
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -30,13 +34,6 @@ export const useSupabaseAuth = () => {
           setError(null);
         }
         
-        // Set a timeout to ensure loading doesn't hang indefinitely
-        timeoutId = setTimeout(() => {
-          if (mounted) {
-            setLoading(false);
-          }
-        }, 3000);
-        
       } catch (err) {
         if (!mounted) return;
         console.error('Error in getSession:', err);
@@ -46,6 +43,7 @@ export const useSupabaseAuth = () => {
       }
       
       if (mounted) {
+        console.log('useSupabaseAuth: Setting loading to false');
         setLoading(false);
       }
     };
@@ -55,6 +53,8 @@ export const useSupabaseAuth = () => {
     // Listen for auth changes  
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return;
+      
+      console.log('useSupabaseAuth: Auth state changed:', { _event, session });
       
       setSession(session);
       setUser(session?.user ?? null);
@@ -72,9 +72,6 @@ export const useSupabaseAuth = () => {
 
     return () => {
       mounted = false;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
       subscription.unsubscribe();
     };
   }, []);
