@@ -11,6 +11,7 @@ export const useSupabaseAuth = () => {
 
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     // Get initial session
     const getInitialSession = async () => {
@@ -19,14 +20,32 @@ export const useSupabaseAuth = () => {
         
         if (!mounted) return;
         
+        setSession(session);
+        setUser(session?.user ?? null);
+        
         if (error) {
           console.error('Error getting session:', error);
           setError('Eroare la obținerea sesiunii');
+        } else {
+          setError(null);
         }
+        
+        // Set a timeout to ensure loading doesn't hang indefinitely
+        timeoutId = setTimeout(() => {
+          if (mounted) {
+            setLoading(false);
+          }
+        }, 3000);
+        
       } catch (err) {
         if (!mounted) return;
         console.error('Error in getSession:', err);
         setError('Eroare la conectarea cu Supabase');
+        setSession(null);
+        setUser(null);
+      }
+      
+      if (mounted) {
         setLoading(false);
       }
     };
@@ -53,6 +72,9 @@ export const useSupabaseAuth = () => {
 
     return () => {
       mounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       subscription.unsubscribe();
     };
   }, []);

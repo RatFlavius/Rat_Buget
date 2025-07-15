@@ -15,11 +15,9 @@ export function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo and Title */}
           <div className="flex items-center space-x-3">
-            <img 
-              src="/LogoBugetRat copy.png" 
-              alt="R.A.T Buget Logo" 
-              className="h-8 w-8"
-            />
+            <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">RAT</span>
+            </div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">
               R.A.T Buget
             </h1>
